@@ -5,32 +5,63 @@ DIR_REACT = '/Users/tylerbecks/Documents/analytics/src/web/react'
 DIR_APP = '/Users/tylerbecks/Documents/analytics/src/web/app'
 DIR_SHARED = '/Users/tylerbecks/Documents/analytics/src/web/shared'
 
-def get_test_metrics_for_dirs(dirs):
+def get_test_line_metrics_for_dirs(dirs):
+    metrics = get_file_metrics_for_strategy(dirs, get_tested_lines_metrics)
+    print('Line Test')
+    print_metric_stats(metrics)
+
+def get_test_file_count_metrics_for_dirs(dirs):
+    metrics = get_file_metrics_for_strategy(dirs, get_tested_file_count_metrics)
+    print('File Count Test')
+    print_metric_stats(metrics)
+
+def get_file_metrics_for_strategy(dirs, metric_strategy):
     total_metrics = {
-        'total_line_count': 0,
-        'tested_line_count': 0,
-        'untested_line_count': 0,
+        'total_count': 0,
+        'tested_count': 0,
+        'untested_count': 0,
     }
     for dir in dirs:
-        dir_metrics = get_test_metrics(dir)
-        total_metrics['total_line_count'] += dir_metrics['total_line_count']
-        total_metrics['tested_line_count'] += dir_metrics['tested_line_count']
-        total_metrics['untested_line_count'] += dir_metrics['untested_line_count']
+        dir_metrics = metric_strategy(dir)
+        total_metrics['total_count'] += dir_metrics['total_count']
+        total_metrics['tested_count'] += dir_metrics['tested_count']
+        total_metrics['untested_count'] += dir_metrics['untested_count']
 
-    print_metric_stats(total_metrics)
+    return total_metrics
 
 def print_metric_stats(metrics):
-    print('Total Line Count: {:,}'.format(metrics['total_line_count']))
+    print('Total: {:,}'.format(metrics['total_count']))
 
-    tested_percent = metrics['tested_line_count'] / metrics['total_line_count'] * 100
-    print('Tested line count: {:,} {:.0f}%'.format(metrics['tested_line_count'], tested_percent))
+    tested_percent = metrics['tested_count'] / metrics['total_count'] * 100
+    print('Tested: {:,} {:.0f}%'.format(metrics['tested_count'], tested_percent))
 
-    untested_percent = metrics['untested_line_count'] / metrics['total_line_count'] * 100
-    print('Untested line count: {:,} {:.0f}%'.format(metrics['untested_line_count'], untested_percent))
+    untested_percent = metrics['untested_count'] / metrics['total_count'] * 100
+    print('Untested: {:,} {:.0f}%'.format(metrics['untested_count'], untested_percent))
 
-def get_test_metrics(dir):
+def get_tested_file_count_metrics(dir):
+    tested_files, src_files = get_tested_untested_files(dir)
+    src_file_counts = {k: 1 for k, v in src_files.items()}
+    return get_counts(src_file_counts, tested_files)
+
+def get_tested_lines_metrics(dir):
+    tested_files, src_files = get_tested_untested_files(dir)
+    src_line_counts = {k: line_count(v) for k, v in src_files.items()}
+    return get_counts(src_line_counts, tested_files)
+
+def get_counts(file_values, tested_files):
+    total_count = sum(file_values.values())
+    tested_count = sum([file_values[k] for k in file_values if k in tested_files])
+    untested_count = total_count - tested_count
+
+    return {
+        'total_count': total_count,
+        'tested_count': tested_count,
+        'untested_count': untested_count,
+    }
+
+def get_tested_untested_files(dir):
     tested_files = set()
-    src_file_line_counts = {}
+    src_files = {}
 
     for path, directories, files in os.walk(dir):
         if should_skip_path(path):
@@ -47,17 +78,9 @@ def get_test_metrics(dir):
                 print_warning_if_conflict(src_file_name, tested_files, full_path)
                 tested_files.add(src_file_name)
             else:
-                src_file_line_counts[file] = line_count(full_path)
+                src_files[file] = full_path
 
-    total_line_count = sum(src_file_line_counts.values())
-    tested_line_count = sum([src_file_line_counts[k] for k in src_file_line_counts if k in tested_files])
-    untested_line_count = total_line_count - tested_line_count
-
-    return {
-        'total_line_count': total_line_count,
-        'tested_line_count': tested_line_count,
-        'untested_line_count': untested_line_count,
-    }
+    return tested_files, src_files
 
 def print_warning_if_conflict(src_file_name, tested_files, full_path):
     if src_file_name in tested_files:
@@ -86,4 +109,6 @@ def should_skip_file(file):
     return not any([file.endswith(ext) for ext in INTERESTING_EXTS])
 
 
-get_test_metrics_for_dirs([DIR_REACT, DIR_APP, DIR_SHARED])
+get_test_line_metrics_for_dirs([DIR_REACT, DIR_APP, DIR_SHARED])
+print('_______________')
+get_test_file_count_metrics_for_dirs([DIR_REACT, DIR_APP, DIR_SHARED])
