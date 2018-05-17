@@ -1,10 +1,6 @@
 import os.path
 from pprint import pprint
 
-DIR_REACT = '/Users/tylerbecks/Documents/analytics/src/web/react'
-DIR_APP = '/Users/tylerbecks/Documents/analytics/src/web/app'
-DIR_SHARED = '/Users/tylerbecks/Documents/analytics/src/web/shared'
-
 def get_test_line_metrics_for_dirs(dirs):
     metrics = get_file_metrics_for_strategy(dirs, get_tested_lines_metrics)
     print('TEST: the total number of lines in files with corresponding test files')
@@ -108,7 +104,10 @@ def should_skip_file(file):
     INTERESTING_EXTS = ['.coffee', '.js', '.jsx']
     return not any([file.endswith(ext) for ext in INTERESTING_EXTS])
 
-
-get_test_line_metrics_for_dirs([DIR_REACT, DIR_APP, DIR_SHARED])
+DIR_REACT = '/Users/tylerbecks/Documents/analytics/src/web/react'
+DIR_APP = '/Users/tylerbecks/Documents/analytics/src/web/app'
+DIR_SHARED = '/Users/tylerbecks/Documents/analytics/src/web/shared'
+DIRS = [DIR_REACT, DIR_APP, DIR_SHARED]
+get_test_line_metrics_for_dirs(DIRS)
 print('_______________')
-get_test_file_count_metrics_for_dirs([DIR_REACT, DIR_APP, DIR_SHARED])
+get_test_file_count_metrics_for_dirs(DIRS)
