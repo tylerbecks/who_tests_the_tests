@@ -7,12 +7,12 @@ DIR_SHARED = '/Users/tylerbecks/Documents/analytics/src/web/shared'
 
 def get_test_line_metrics_for_dirs(dirs):
     metrics = get_file_metrics_for_strategy(dirs, get_tested_lines_metrics)
-    print('Line Test')
+    print('TEST: the total number of lines in files with corresponding test files')
     print_metric_stats(metrics)
 
 def get_test_file_count_metrics_for_dirs(dirs):
     metrics = get_file_metrics_for_strategy(dirs, get_tested_file_count_metrics)
-    print('File Count Test')
+    print('TEST: the number of files with corresponding test files')
     print_metric_stats(metrics)
 
 def get_file_metrics_for_strategy(dirs, metric_strategy):
